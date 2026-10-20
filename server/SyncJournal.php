@@ -40,12 +40,6 @@ final class SyncJournal
         return $value;
     }
 
-    private function begin(): void
-    {
-        if ($this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite') $this->db->exec('BEGIN IMMEDIATE');
-        else $this->db->beginTransaction();
-    }
-
     private function state(bool $initialize): array
     {
         // Also used by legacy saveVault: this owner-row lock makes the first
@@ -79,7 +73,7 @@ final class SyncJournal
             }
         }
         $pending = array_values(array_unique($pending));
-        $this->begin();
+        $transaction = WriteTransaction::begin($this->db);
         try {
             $state = $this->state(true);
             $head = (int) $state['head'];
@@ -114,10 +108,10 @@ final class SyncJournal
                 foreach ($query->fetchAll(PDO::FETCH_COLUMN) as $id) $known[$id] = true;
             }
             $received = array_values(array_filter($pending, static fn(string $id): bool => isset($known[$id])));
-            $this->db->commit();
+            $transaction->commit();
             return ['baseline' => $baseline, 'changes' => $changes, 'cursor' => $cursor, 'hasMore' => $cursor < $head, 'received' => $received];
         } catch (Throwable $error) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $transaction->rollback();
             throw $error;
         }
     }
@@ -144,7 +138,7 @@ final class SyncJournal
             $data = self::json(Crypto::envelope($operation['data'] ?? null));
             $normalized[] = ['id' => $id, 'data' => $data, 'hash' => hash('sha256', $data), 'bytes' => strlen($data)];
         }
-        $this->begin();
+        $transaction = WriteTransaction::begin($this->db);
         try {
             $state = $this->state(true);
             $head = (int) $state['head'];
@@ -173,10 +167,10 @@ final class SyncJournal
                 $accepted[$operation['id']] = true;
             }
             $this->db->prepare('UPDATE nute_sync_state SET head = ?, bytes_used = ? WHERE owner_id = 1')->execute([$head, $used]);
-            $this->db->commit();
+            $transaction->commit();
             return ['accepted' => array_keys($accepted), 'cursor' => $head];
         } catch (Throwable $error) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $transaction->rollback();
             throw $error;
         }
     }
@@ -186,7 +180,7 @@ final class SyncJournal
         self::input($input, ['cursor', 'vault']);
         $cursor = self::cursor($input['cursor'] ?? null);
         $vault = self::json(Crypto::envelope($input['vault'] ?? null, false, 16 * 1024 * 1024));
-        $this->begin();
+        $transaction = WriteTransaction::begin($this->db);
         try {
             $state = $this->state(false);
             if ($cursor !== (int) $state['head']) {
@@ -199,10 +193,10 @@ final class SyncJournal
                 ->execute([$cursor, $vault, $used]);
             $this->db->prepare('DELETE FROM nute_sync_changes WHERE owner_id = 1 AND seq <= ?')->execute([$cursor]);
             // Receipts never expire: an offline device may retry arbitrarily late.
-            $this->db->commit();
+            $transaction->commit();
             return ['ok' => true];
         } catch (Throwable $error) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $transaction->rollback();
             throw $error;
         }
     }

@@ -74,6 +74,44 @@ final class Config
     }
 }
 
+/** Tracks write transactions even on PDO SQLite versions that do not track raw BEGIN. */
+final class WriteTransaction
+{
+    private bool $active = false;
+    private bool $sqlite;
+
+    private function __construct(private PDO $db)
+    {
+        $this->sqlite = $db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite';
+        // Acquire SQLite's write lock before reading, avoiding read-to-write
+        // upgrades and serializing counter resets with concurrent failures.
+        if ($this->sqlite) $db->exec('BEGIN IMMEDIATE');
+        else $db->beginTransaction();
+        $this->active = true;
+    }
+
+    public static function begin(PDO $db): self
+    {
+        return new self($db);
+    }
+
+    public function commit(): void
+    {
+        if (!$this->active) return;
+        if ($this->sqlite) $this->db->exec('COMMIT');
+        else $this->db->commit();
+        $this->active = false;
+    }
+
+    public function rollback(): void
+    {
+        if (!$this->active) return;
+        if ($this->sqlite) $this->db->exec('ROLLBACK');
+        elseif ($this->db->inTransaction()) $this->db->rollBack();
+        $this->active = false;
+    }
+}
+
 final class Crypto
 {
     public static function decode64(mixed $value, int $bytes): string

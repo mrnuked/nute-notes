@@ -312,14 +312,6 @@ final class App
         return [$id, $digest];
     }
 
-    private function beginWriteTransaction(): void
-    {
-        // SQLite has no row locks. Acquire its write lock before reading so a
-        // concurrent check cannot race a successful attempt-counter reset.
-        if ($this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite') $this->db->exec('BEGIN IMMEDIATE');
-        else $this->db->beginTransaction();
-    }
-
     private function pinRecord(string $id): array|false
     {
         $suffix = $this->db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql' ? ' FOR UPDATE' : '';
@@ -340,7 +332,7 @@ final class App
     {
         [$id, $digest] = $this->pinInput($input);
         $this->limiter->take('pin/register/owner', 'owner', 60, 3600, $now);
-        $this->beginWriteTransaction();
+        $transaction = WriteTransaction::begin($this->db);
         try {
             // Serialize registration against the single owner on MySQL: the
             // record cap and immutable IDs remain safe under concurrent tabs.
@@ -363,14 +355,14 @@ final class App
                 $this->db->prepare('INSERT INTO nute_note_pins (id, owner_id, proof_hash, created_at) VALUES (?, 1, ?, ?)')
                     ->execute([$id, $digest, $now]);
             }
-            $this->db->commit();
+            $transaction->commit();
         } catch (ApiError $error) {
             // Expected failures must retain rate-limit increments. No note PIN
             // record is changed before any such error is raised.
-            if ($this->db->inTransaction()) $this->db->commit();
+            $transaction->commit();
             throw $error;
         } catch (Throwable $error) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $transaction->rollback();
             throw $error;
         }
         return ['ok' => true];
@@ -380,7 +372,7 @@ final class App
     {
         [$id, $digest] = $this->pinInput($input);
         $this->limiter->take('pin/check/owner', 'owner', 30, 900, $now);
-        $this->beginWriteTransaction();
+        $transaction = WriteTransaction::begin($this->db);
         try {
             $record = $this->pinRecord($id);
             if (!$record) {
@@ -392,12 +384,12 @@ final class App
                 throw new ApiError(403, 'pin_invalid', 'Неверный PIN-код.');
             }
             $this->limiter->reset('pin/check/note', $id, 900, $now);
-            $this->db->commit();
+            $transaction->commit();
         } catch (ApiError $error) {
-            if ($this->db->inTransaction()) $this->db->commit();
+            $transaction->commit();
             throw $error;
         } catch (Throwable $error) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $transaction->rollback();
             throw $error;
         }
         return ['ok' => true];
@@ -410,7 +402,7 @@ final class App
             throw new ApiError(422, 'invalid_revision', 'Некорректная версия хранилища.');
         }
         $vault = Crypto::envelope($input['vault'] ?? null);
-        $this->beginWriteTransaction();
+        $transaction = WriteTransaction::begin($this->db);
         try {
             $this->owner(true);
             if ($this->db->query('SELECT owner_id FROM nute_sync_state WHERE owner_id = 1')->fetchColumn() !== false) {
@@ -421,9 +413,9 @@ final class App
             if ($statement->rowCount() !== 1) {
                 throw new ApiError(409, 'revision_conflict', 'Хранилище изменено в другом окне. Сначала загрузите актуальную версию.');
             }
-            $this->db->commit();
+            $transaction->commit();
         } catch (Throwable $error) {
-            if ($this->db->inTransaction()) $this->db->rollBack();
+            $transaction->rollback();
             throw $error;
         }
         return ['revision' => $revision + 1];

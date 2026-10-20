@@ -3,11 +3,12 @@ DirectoryIndex index.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # Production HTTP must redirect before any credentials are sent.
+    # Configure the canonical HTTP-to-HTTPS redirect in the Apache virtual host.
+    # Refuse non-TLS requests here rather than redirecting to an untrusted Host.
     # Loopback is used only by the explicitly configured local environment.
     RewriteCond %{HTTPS} !=on
     RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC]
-    RewriteRule ^ https://note.nukedo.com%{REQUEST_URI} [R=308,L]
+    RewriteRule ^ - [F]
     RewriteRule (^|/)\.(?!well-known/) - [F]
 </IfModule>
 
