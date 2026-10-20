@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Nute Notes</title>
+  <link rel="icon" href="favicon.png?v=0.2.0" type="image/png" sizes="any">
+  <link rel="apple-touch-icon" href="favicon.png?v=0.2.0">
+  <link rel="stylesheet" href="assets/icons/regular/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=0.2.0">
+  <link rel="stylesheet" href="assets/rich-editor.css?v=0.2.0">
+  <link rel="stylesheet" href="assets/login-layout.css?v=0.2.0">
+  <link rel="stylesheet" href="assets/note-menu.css?v=0.2.2">
+  <link rel="stylesheet" href="assets/note-pin.css?v=0.3.0">
+  <script type="module" src="assets/app.js?v=0.5.0"></script>
+</head>
+<body>
+  <main id="login" class="login-page">
+    <section class="auth-card" aria-label="Вход в Nute Notes">
+      <img class="auth-logo" src="assets/nute-logo.png?v=0.2.0" width="240" height="240" alt="Nute Notes">
+      <form id="login-form" class="auth-form" autocomplete="off">
+        <div id="email-step">
+          <label class="sr-only" for="email">Электронная почта</label>
+          <input id="email" name="nute-identity" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Электронная почта" required>
+        </div>
+        <div id="password-step" hidden>
+          <button id="back-email" class="back-email" type="button"><i class="ph ph-caret-left" aria-hidden="true"></i><span id="chosen-email"></span></button>
+          <label class="sr-only" for="password">Пароль</label>
+          <input id="password" type="password" autocomplete="current-password" aria-label="Пароль" placeholder="Пароль" maxlength="1024">
+          <label class="sr-only" for="otp">Код аутентификатора или резервный код</label>
+          <input id="otp" class="otp-input" type="text" autocomplete="one-time-code" aria-label="Код аутентификатора или резервный код" placeholder="Код аутентификатора" maxlength="64">
+          <p id="trusted-notice" class="small muted" hidden>Это устройство подтверждено. Введите мастер-пароль.</p>
+          <label id="remember-label" class="remember-device"><input id="remember-device" type="checkbox">Доверять этому устройству 180 дней</label>
+        </div>
+        <div class="privacy-copy">
+          <i class="ph ph-users-three privacy-icon" aria-hidden="true"></i>
+          <p>Nute Notes — личные заметки на вашем сервере. Текст заметок шифруется на устройстве до отправки. Для входа используются мастер-пароль и второй фактор. Здесь нет рекламы, рассылок и аналитики. Сохраняйте резервные копии: забытый мастер-пароль восстановить нельзя.</p>
+        </div>
+        <p id="auth-message" class="auth-message" role="status" aria-live="polite"></p>
+        <button id="retry-lock" type="button" class="rescue-button" hidden>Повторить блокировку</button>
+        <button id="download-rescue" type="button" class="rescue-button" hidden>Скачать несохранённую зашифрованную копию</button>
+        <div class="auth-actions">
+          <button id="continue" class="primary" type="submit">Продолжить</button>
+        </div>
+      </form>
+    </section>
+  </main>
+  <main id="setup" class="setup-page" hidden>
+    <section class="setup-card">
+      <img src="assets/nute-logo.png?v=0.2.0" width="96" height="96" alt="Nute Notes">
+      <h1>Ваши заметки. Только ваши.</h1>
+      <p class="muted">Создайте единственный аккаунт Nute Notes. Открытой регистрации здесь нет.</p>
+      <form id="setup-form">
+        <label>Ключ первоначальной настройки<input id="setup-token" type="password" autocomplete="off" required></label>
+        <label>Электронная почта<input id="setup-email" type="email" autocomplete="off" required></label>
+        <label>Мастер-пароль<input id="setup-password" type="password" minlength="16" maxlength="1024" autocomplete="new-password" required></label>
+        <label>Повторите мастер-пароль<input id="setup-repeat" type="password" minlength="16" maxlength="1024" autocomplete="new-password" required></label>
+        <p class="small muted">Не менее 16 символов. Сохраните пароль в надёжном месте: без него заметки нельзя расшифровать.</p>
+        <div class="totp-setup"><h2>Подключите аутентификатор</h2><p class="small muted">Добавьте этот QR-код в приложение-аутентификатор. Или введите ключ вручную.</p><canvas id="totp-qr" aria-label="QR-код для аутентификатора"></canvas><code id="totp-secret"></code></div>
+        <label>Код из приложения<input id="setup-otp" type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required></label>
+        <p id="setup-message" role="status" class="auth-message"></p>
+        <button id="setup-submit" class="primary" type="submit">Создать хранилище</button>
+      </form>
+    </section>
+  </main>
+  <main id="workspace" class="workspace" hidden>
+    <header class="app-header">
+      <div class="wordmark">Nute <span>Notes</span></div>
+      <div class="header-actions">
+        <span id="save-status" class="save-status" role="status">Сохранено</span>
+        <button id="backup" class="icon-button" title="Зашифрованная резервная копия" aria-label="Скачать зашифрованную резервную копию"><i class="ph ph-download-simple" aria-hidden="true"></i></button>
+        <button id="account-button" class="icon-button" title="Аккаунт" aria-label="Меню аккаунта" aria-expanded="false"><i class="ph ph-user-circle" aria-hidden="true"></i></button>
+      </div>
+      <div id="account-menu" class="account-menu" hidden>
+        <strong id="account-email"></strong>
+        <span class="small muted">Автоблокировка выключена</span>
+        <button id="restore-backup"><i class="ph ph-upload-simple" aria-hidden="true"></i>Восстановить из копии</button>
+        <button id="trusted-devices"><i class="ph ph-devices" aria-hidden="true"></i>Доверенные устройства</button>
+        <button id="lock"><i class="ph ph-lock-key" aria-hidden="true"></i>Заблокировать</button>
+        <button id="logout"><i class="ph ph-sign-out" aria-hidden="true"></i>Выйти и забыть устройство</button>
+      </div>
+    </header>
+    <aside class="folder-panel" aria-label="Папки">
+      <div id="folders" class="folders"></div>
+      <button id="new-folder" class="new-folder"><i class="ph ph-folder-plus" aria-hidden="true"></i>Новая папка</button>
+    </aside>
+    <section class="notes-panel" aria-label="Список заметок">
+      <div class="search-wrap"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="search" type="search" placeholder="Поиск по всем заметкам" aria-label="Поиск по всем заметкам" autocomplete="off"></div>
+      <div class="mobile-folder"><label for="folder-select" class="sr-only">Папка</label><select id="folder-select"></select><button id="mobile-folder-menu" class="icon-button" aria-label="Изменить папку"><i class="ph ph-dots-three" aria-hidden="true"></i></button><button id="mobile-new-folder" class="icon-button" aria-label="Новая папка"><i class="ph ph-folder-plus" aria-hidden="true"></i></button><button id="mobile-new" class="icon-button" aria-label="Новая заметка"><i class="ph ph-note-pencil" aria-hidden="true"></i></button></div>
+      <div id="notes-list" class="notes-list"></div>
+      <div id="notes-count" class="notes-count"></div>
+    </section>
+    <section id="editor-panel" class="editor-panel" aria-label="Редактор заметки">
+      <nav class="editor-toolbar" aria-label="Действия с заметкой">
+        <div><button id="mobile-back" class="icon-button mobile-back" aria-label="Назад к заметкам"><i class="ph ph-caret-left" aria-hidden="true"></i></button><button id="delete-note" class="icon-button" title="Переместить в корзину" aria-label="Переместить в корзину"><i class="ph ph-trash" aria-hidden="true"></i></button><button id="restore-note" class="text-button" hidden>Восстановить</button></div>
+        <div class="toolbar-center"><button id="format-button" class="icon-button format-button" title="Форматирование текста" aria-label="Форматирование текста" aria-expanded="false" aria-controls="format-menu">Аа</button><button id="checklist" class="icon-button" title="Список с галочками" aria-label="Список с галочками" aria-pressed="false"><i class="ph ph-list-checks" aria-hidden="true"></i></button><button id="table-button" class="icon-button" title="Таблица" aria-label="Таблица" aria-expanded="false" aria-controls="table-menu"><i class="ph ph-table" aria-hidden="true"></i></button></div>
+        <div class="note-tools"><button id="protect-note" class="icon-button" title="Установить PIN-код" aria-label="Установить PIN-код"><i class="ph ph-lock-key" aria-hidden="true"></i></button><button id="pin-note" class="icon-button" title="Закрепить" aria-label="Закрепить заметку" aria-pressed="false"><i class="ph ph-push-pin" aria-hidden="true"></i></button><label class="sr-only" for="move-folder">Переместить заметку</label><select id="move-folder" title="Переместить в папку" aria-label="Переместить заметку в папку"></select></div>
+        <button id="new-note" class="icon-button" title="Новая заметка" aria-label="Новая заметка"><i class="ph ph-note-pencil" aria-hidden="true"></i></button>
+      </nav>
+      <div id="format-menu" class="editor-popover format-menu" role="group" aria-label="Оформление текста" hidden>
+        <div class="inline-formats"><button id="format-bold" aria-label="Полужирный" aria-pressed="false"><b>B</b></button><button id="format-italic" aria-label="Курсив" aria-pressed="false"><em>I</em></button><button id="format-underline" aria-label="Подчёркнутый" aria-pressed="false"><u>U</u></button><button id="format-strike" aria-label="Зачёркнутый" aria-pressed="false"><s>S</s></button></div>
+        <div class="block-formats"><button id="format-title" class="format-title" aria-pressed="false">Название</button><button id="format-heading" class="format-heading" aria-pressed="false">Заголовок</button><button id="format-subheading" class="format-subheading" aria-pressed="false">Подзаголовок</button><button id="format-paragraph" aria-pressed="false">Текст</button><button id="format-mono" class="format-mono" aria-pressed="false">Моноширинный</button><button id="format-bullet" aria-pressed="false">• Маркированный список</button><button id="format-dash" aria-pressed="false">– Список с тире</button><button id="format-ordered" aria-pressed="false">1. Нумерованный список</button></div>
+      </div>
+      <div id="table-menu" class="editor-popover table-menu" role="group" aria-label="Действия с таблицей" hidden>
+        <button id="table-row-before">Добавить строку сверху</button><button id="table-row-after">Добавить строку снизу</button><button id="table-column-before">Добавить столбец слева</button><button id="table-column-after">Добавить столбец справа</button><hr><button id="table-delete-row">Удалить строку</button><button id="table-delete-column">Удалить столбец</button><button id="table-delete-table">Удалить таблицу</button>
+      </div>
+      <div id="editor-empty" class="editor-empty"><i class="ph ph-note-blank" aria-hidden="true"></i><h1>Место для ваших мыслей</h1><p>Создайте первую заметку.</p><button id="empty-create" class="text-button">Новая заметка</button></div>
+      <div id="note-locked" class="note-locked" hidden><i class="ph ph-lock-key" aria-hidden="true"></i><h2>Заметка защищена PIN-кодом</h2><p>Для просмотра введите код из четырёх цифр.</p><button id="unlock-note">Ввести PIN-код</button></div>
+      <div id="editor" class="editor" hidden><div id="note-date" class="note-date"></div><label class="sr-only" for="note-title">Заголовок</label><input id="note-title" maxlength="300" placeholder="Новая заметка" autocomplete="off"><div id="note-body" class="note-body"></div></div>
+    </section>
+    <div id="sync-error" class="sync-error" hidden role="alert"><span id="sync-message"></span><button id="retry-save">Повторить</button><button id="reload-vault">Загрузить серверную версию</button><button id="rescue-backup">Скачать свою копию</button></div>
+  </main>
+  <dialog id="dialog"><form method="dialog"><h2 id="dialog-title"></h2><p id="dialog-description"></p><input id="dialog-input" maxlength="120" autocomplete="off" hidden><div id="dialog-extra"></div><div class="dialog-actions"><button id="dialog-cancel" value="cancel">Отмена</button><button id="dialog-confirm" class="primary" value="confirm">Продолжить</button></div></form></dialog>
+  <dialog id="folder-dialog"><form method="dialog"><h2>Изменить папку</h2><label for="folder-name-input" class="sr-only">Название папки</label><input id="folder-name-input" aria-label="Название папки" maxlength="120" required autocomplete="off"><p>При удалении папки её заметки будут перенесены в «Заметки».</p><button id="folder-delete" class="danger-text" value="delete" formnovalidate>Удалить папку</button><div class="dialog-actions"><button value="cancel" formnovalidate>Отмена</button><button class="primary" value="rename">Переименовать</button></div></form></dialog>
+  <div id="note-menu" class="note-context-menu" role="menu" aria-label="Действия с заметкой" hidden>
+    <button type="button" role="menuitem" data-action="pin"><i class="ph ph-push-pin" aria-hidden="true"></i><span>Прикрепить заметку</span></button>
+    <button type="button" role="menuitem" data-action="restore" hidden><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i><span>Восстановить</span></button>
+    <button type="button" role="menuitem" data-action="protect"><i class="ph ph-lock-key" aria-hidden="true"></i><span>Установить PIN-код</span></button>
+    <button type="button" role="menuitem" data-action="unprotect" hidden><i class="ph ph-lock-key-open" aria-hidden="true"></i><span>Снять PIN-код</span></button>
+    <hr role="separator">
+    <button type="button" role="menuitem" data-action="delete" class="menu-danger"><i class="ph ph-trash" aria-hidden="true"></i><span>Удалить</span></button>
+  </div>
+  <input id="backup-file" type="file" accept=".json,application/json" hidden>
+  <dialog id="pin-dialog" class="pin-dialog"><form id="pin-form"><h2 id="pin-title"></h2><p id="pin-description"></p><label for="pin-value">PIN-код · 4 цифры</label><input id="pin-value" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" required><div id="pin-repeat-wrap"><label for="pin-repeat">Повторите PIN-код</label><input id="pin-repeat" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off"></div><p id="pin-message" class="pin-message" role="alert"></p><div class="dialog-actions"><button id="pin-cancel" type="button">Отмена</button><button id="pin-submit" type="submit" class="primary">Продолжить</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "name": "nute-notes",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "test:installer": "node --test tests/installer.test.mjs",
+    "test": "node --test tests/crypto.test.mjs tests/model.test.mjs tests/document.test.mjs tests/editor.test.mjs tests/folders.test.mjs tests/note-menu.test.mjs tests/lifecycle.test.mjs tests/session-resume.test.mjs tests/note-pin.test.mjs tests/note-locks.test.mjs tests/sync.test.mjs tests/sync-model.test.mjs",
+    "build": "npm run build:editor",
+    "build:editor": "node scripts/build-editor.mjs",
+    "test:http": "node --test tests/backend-http.test.mjs tests/backend-migration.test.mjs tests/sync-http.test.mjs",
+    "package:server": "node scripts/package-server.mjs"
+  },
+  "devDependencies": {
+    "@phosphor-icons/web": "2.1.2",
+    "esbuild": "0.25.12",
+    "jsdom": "30.1.3",
+    "qrcode": "1.5.4"
+  },
+  "dependencies": {
+    "@tiptap/core": "3.32.0",
+    "@tiptap/extension-list": "3.32.0",
+    "@tiptap/extension-table": "3.32.0",
+    "@tiptap/pm": "3.32.0",
+    "@tiptap/starter-kit": "3.32.0"
+  },
+  "license": "MIT",
+  "author": "Nute Notes contributors",
+  "homepage": "https://github.com/mrnuked/nute-notes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrnuked/nute-notes.git"
+  }
+}

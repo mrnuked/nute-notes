@@ -1,0 +1,73 @@
+{
+  "name": "nute-notes",
+  "productName": "Nute Notes",
+  "version": "0.5.0",
+  "private": true,
+  "description": "Личные зашифрованные заметки NUTE",
+  "homepage": "https://github.com/mrnuked/nute-notes",
+  "author": { "name": "Nute Notes contributors", "email": "mrnuked@users.noreply.github.com" },
+  "main": "src/main.cjs",
+  "scripts": {
+    "prepare:ui": "node scripts/prepare.mjs",
+    "dist": "npm run prepare:ui && electron-builder --linux deb --x64 --publish never",
+    "smoke": "electron . --nute-smoke"
+  },
+  "devDependencies": {
+    "electron": "44.9.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "org.nutenotes.app",
+    "productName": "Nute Notes",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**",
+      "ui/**",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "executableName": "nute-notes",
+      "icon": "ui/assets/nute-logo.png",
+      "category": "Office",
+      "artifactName": "Nute-Notes-${version}-Ubuntu-${arch}.${ext}",
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "NUTE"
+        }
+      }
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnss3",
+        "libasound2t64",
+        "libgbm1",
+        "libsecret-1-0",
+        "gnome-keyring",
+        "libnotify4",
+        "libxtst6",
+        "libxss1",
+        "libatspi2.0-0"
+      ],
+      "afterInstall": "scripts/after-install.sh",
+      "afterRemove": "scripts/after-remove.sh"
+    },
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "onlyLoadAppFromAsar": true
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrnuked/nute-notes.git"
+  }
+}

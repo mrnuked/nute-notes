@@ -1,0 +1,35 @@
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+      - name: PHP dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli php-sqlite3 php-mbstring php-mysql
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - run: npm test
+      - run: npm run test:http
+      - run: npm run test:installer
+      - name: Native bridge contracts
+        run: node --test apps/windows/tests/*.test.mjs apps/android/tests/native-bridge.test.mjs
+      - name: PHP checks
+        run: |
+          php tests/backend.php
+          php tests/backend-pin.php
+          php tests/backend-sync.php
+          php tests/http-session.php
+      - run: npm run package:server

@@ -1,0 +1,14 @@
+.note-lock-symbol{font-size:13px!important;margin-right:5px;vertical-align:baseline!important}
+.note-locked{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 24px 80px;color:var(--muted)}
+.note-locked>i{font-size:58px;margin-bottom:22px;color:#a6a6aa}
+.note-locked h2{font-size:18px;line-height:1.35;color:var(--text);margin:0 0 8px}
+.note-locked p{font-size:14px;line-height:1.5;max-width:260px;margin:0 0 24px}
+.note-locked button{background:#39393c;border-radius:8px;min-width:180px;padding:10px 18px;font-size:14px}
+.note-locked button:hover{background:#454549}
+.pin-dialog{max-width:360px}
+.pin-dialog h2{font-size:20px}
+.pin-dialog label{display:block;font-size:13px;color:var(--muted);margin:18px 0 8px}
+.pin-dialog input{font-size:24px;letter-spacing:12px;text-align:center;padding-left:24px;font-variant-numeric:tabular-nums}
+.pin-dialog .pin-message{color:#ffb2a8;font-size:13px;min-height:18px;margin:12px 0 0}
+.pin-dialog .dialog-actions{margin-top:18px}
+@media(max-width:580px){.note-tools #move-folder{max-width:65px}.editor-toolbar{gap:4px}.note-locked{padding-bottom:44px}}

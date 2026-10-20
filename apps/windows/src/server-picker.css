@@ -1,0 +1,5 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; background: #1d1d1f; color: #eee; }
+body { margin: 0; padding: 24px 30px; } h1 { margin: 0; font-size: 25px; } h1 span { color: #f4c400; }
+p { margin: 10px 0 18px; } label { display: block; margin-bottom: 6px; } input { box-sizing: border-box; width: 100%; border: 1px solid #666; border-radius: 8px; padding: 12px; font: inherit; background: #29292c; }
+.hint { color: #aaa; font-size: 12px; margin: 8px 0; } #error { color: #ff9e9e; min-height: 18px; font-size: 12px; margin: 6px 0; }
+button { padding: 10px 24px; border: 0; border-radius: 8px; background: #f4c400; color: #171717; font: inherit; font-weight: 600; cursor: pointer; }

@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>NUTE — сервер заметок</title><link rel="stylesheet" href="server-picker.css">
+</head><body><main><h1>NUTE <span>Заметки</span></h1><p>Подключитесь к своему серверу.</p>
+<form id="server-form"><label for="origin">Адрес сайта</label><input id="origin" type="url" required autocomplete="url" spellcheck="false" placeholder="https://notes.example.com">
+<p class="hint">Для каждого адреса заметки и вход сохраняются отдельно. Указывайте только сервер, которому доверяете.</p>
+<p id="error" role="alert"></p><button id="connect" type="submit">Продолжить</button></form>
+</main><script src="server-picker.js"></script></body></html>
